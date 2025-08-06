@@ -1,0 +1,105 @@
+# MONO REPO layout
+
+project-root/
+├── frontend/               # React app (built and copied into backend's wwwroot)
+│   └── ...
+├── backend/               # .NET Core API with React served as static files
+│   ├── Controllers/
+│   ├── Program.cs
+│   └── ...
+├── deploy/               # (Optional) Infra-as-code, deployment scripts
+├── README.md
+└── .gitignore
+
+
+frontend/
+├── public/
+│   └── logo.svg
+├── src/
+│   ├── assets/                # Static files (e.g., images, fonts)
+│   ├── components/            # Reusable UI components (e.g., Card, Tile)
+│   ├── pages/                 # Page-level components
+│   │   ├── LandingPage.tsx
+│   │   └── ConversationPage.tsx
+│   ├── routes/                # Route definitions
+│   ├── services/              # API calls (e.g., conversations.ts, questions.ts)
+│   ├── types/                 # TypeScript types
+│   ├── utils/                 # Helpers (e.g., shuffle, randomize)
+│   ├── App.tsx
+│   ├── main.tsx               # React entry point
+│   └── index.css
+├── .env
+├── tsconfig.json
+└── vite.config.ts             # (or webpack.config.js if not using Vite)
+
+
+backend/
+├── Controllers/
+│   ├── ConversationsController.cs
+│   └── QuestionsController.cs
+├── Models/
+│   ├── Conversation.cs
+│   └── Question.cs
+├── DTOs/
+│   ├── ConversationDto.cs
+│   └── QuestionDto.cs
+├── Services/
+│   ├── IConversationService.cs
+│   └── ConversationService.cs
+├── Data/
+│   ├── ApplicationDbContext.cs
+│   └── SeedData.cs
+├── Migrations/
+│   └── ...                    # EF Core migrations
+├── Program.cs
+├── Startup.cs
+└── appsettings.json
+
+
+CREATE TABLE conversations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    reference_id TEXT UNIQUE NOT NULL,  -- e.g. 'first_date', 'marriage_reconnect'
+    title TEXT NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE questions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    conversation_id UUID REFERENCES conversations(id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    sequence INT,  -- optional
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+
+
+
+this next conversation between us will be to build the online app for this project.
+this will be the tech stack
+
+FE - react
+BE - .net core in c#
+DB - postgresql
+
+the mechanics would be quite simple:
+
+- landing page.
+Should have a logo
+Short explanation on what this web page is about. Should be more like a slogan than a paragraph to describe.
+There should be a selection of all available conversations one can have. I was thinking they can appear like tiles. Would another UI element better represent this for visuals?
+On page load, we will need to get the list of all possible conversations one can have so that we can populate the tiles.
+For each convo, we will have 1 tile.
+
+If a user clicks on a tile (or whatever element there can be for them to select a conversation), they will be redirected to another page.
+
+- Convo cards page
+This can be a generic page. Where cards can be flashed randomly from my list of qns.
+i think when we arrive at this page, the convo id could be in the url query param, so that we know what convo we are having. that way the page route can be generic, and based on the convo-id in the query param, we will be able to call apis to get the next card (question).
+
+On load, we can get a random card (question).
+There should be a button to get next card / question.
+When user clicks it, we retrieve the next question.
+Instead of calling apis for each question, we should retrieve all questions on the FE when page loads for the conversation,
+When click on next qns, we don't make API call, but get the next card / questions from the FE's memory.
