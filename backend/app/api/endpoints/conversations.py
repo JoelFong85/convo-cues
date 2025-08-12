@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.models.conversation import Conversation
 from app.api.dependencies import get_db
+import random
 
 router = APIRouter()
 
@@ -24,8 +25,13 @@ def get_questions(convo_ref_id: str, db: Session = Depends(get_db)):
     if not convo:
         raise HTTPException(status_code=404, detail="Conversation not found")
 
-    result = []
+    questions = []
     for q in convo.questions:
-        result.append({"id": q.id, "question_text": q.question_text})
+        questions.append({"id": q.id, "question_text": q.question_text})
 
-    return result
+    random.shuffle(questions)
+
+    return {
+        "conversation_title": convo.title,
+        "questions": questions
+    }
